@@ -16,15 +16,10 @@ module.exports = async ({
 
     log("----------------------------------------------------")
 
-    const manualNFT = await deploy('manualNFT', {
-        from: deployer,
-        log: true
-    })
-    
-    log(`You have deployed an NFT contract to ${manualNFT.address}`)
+    const ManualNFTContract = await ethers.getContractFactory("manualNFT")
+    const deployedNFTContract = await ManualNFTContract.deploy()
+    await deployedNFTContract.deployed()
 
-    const manualNFTContract = await ethers.getContractFactory("manualNFT")
-    const deployedNFTContract = new ethers.Contract(manualNFT.address, manualNFTContract.interface, signer)
     const networkName = networkConfig[chainId]['name']
 
     log(`Verify with:\n npx hardhat verify --network ${networkName} ${deployedNFTContract.address}`)
@@ -37,7 +32,12 @@ module.exports = async ({
     tx = await deployedNFTContract.create(svg)
     await tx.wait(1)
 
-    log(`You can view the tokenURI here ${await deployedNFTContract.tokenURI(0)}`)
-}
+    let tokenID_BN = await deployedNFTContract.addressToTokenID(deployer)
+    let tokenID = tokenID_BN.toNumber()
 
+    console.log(tokenID)
+
+    log(`You can view the tokenURI here \n ${await deployedNFTContract.tokenURI(0)}`)
+
+}
 module.exports.tags = ['all', 'svg']
